@@ -1,0 +1,145 @@
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useState } from "react";
+import Home from "./pages/Home";
+import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import SuccessModal from "./components/SuccessModal";
+
+function App() {
+  const [cart, setCart] = useState([]);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-gray-100 text-gray-900">
+        <nav className="p-4 bg-white shadow-md flex justify-between">
+          <Link to="/" className="text-xl font-semibold">Loja Minimalista</Link>
+          <Link to="/cart" className="text-lg">🛒 {cart.length}</Link>
+        </nav>
+        <Routes>
+          <Route path="/" element={<Home cart={cart} setCart={setCart} />} />
+          <Route path="/product/:id" element={<ProductDetails cart={cart} setCart={setCart} />} />
+          <Route path="/cart" element={<Cart cart={cart} setCart={setCart} />} />
+          <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} setShowSuccess={setShowSuccess} />} />
+        </Routes>
+        {showSuccess && <SuccessModal setShowSuccess={setShowSuccess} />}
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+// Criando as páginas e componentes
+
+// Home.js
+export function Home({ cart, setCart }) {
+  const products = [
+    { id: 1, name: "Produto 1", price: 100 },
+    { id: 2, name: "Produto 2", price: 200 },
+  ];
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Produtos</h1>
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        {products.map((product) => (
+          <div key={product.id} className="p-4 bg-white shadow rounded-lg">
+            <h2 className="text-lg font-semibold">{product.name}</h2>
+            <p className="text-gray-700">R$ {product.price}</p>
+            <Link to={`/product/${product.id}`} className="block mt-2 text-blue-500">Ver detalhes</Link>
+            <button 
+              className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={() => setCart([...cart, product])}
+            >
+              Adicionar ao Carrinho
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ProductDetails.js
+export function ProductDetails({ cart, setCart }) {
+  const { id } = useParams();
+  const product = { id, name: `Produto ${id}`, price: id * 100 };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">{product.name}</h1>
+      <p className="text-gray-700">Preço: R$ {product.price}</p>
+      <button 
+        className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+        onClick={() => setCart([...cart, product])}
+      >
+        Adicionar ao Carrinho
+      </button>
+    </div>
+  );
+}
+
+// Cart.js
+export function Cart({ cart, setCart }) {
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Carrinho</h1>
+      {cart.length === 0 ? (
+        <p className="text-gray-700">Seu carrinho está vazio.</p>
+      ) : (
+        <div>
+          {cart.map((item, index) => (
+            <div key={index} className="p-4 bg-white shadow rounded-lg mb-2">
+              <h2 className="text-lg font-semibold">{item.name}</h2>
+              <p className="text-gray-700">R$ {item.price}</p>
+            </div>
+          ))}
+          <Link to="/checkout" className="block mt-4 bg-green-500 text-white px-4 py-2 rounded text-center">Finalizar Compra</Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Checkout.js
+export function Checkout({ cart, setCart, setShowSuccess }) {
+  const handlePurchase = () => {
+    setCart([]);
+    setShowSuccess(true);
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Checkout</h1>
+      <p className="text-gray-700">Preencha seus dados para finalizar a compra.</p>
+      <input type="text" placeholder="Nome" className="block w-full p-2 mt-2 border rounded" />
+      <input type="email" placeholder="Email" className="block w-full p-2 mt-2 border rounded" />
+      <input type="text" placeholder="Endereço" className="block w-full p-2 mt-2 border rounded" />
+      <button 
+        className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
+        onClick={handlePurchase}
+      >
+        Confirmar Pedido
+      </button>
+    </div>
+  );
+}
+
+// SuccessModal.js
+export function SuccessModal({ setShowSuccess }) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+        <h2 className="text-xl font-semibold">Pedido realizado com sucesso!</h2>
+        <button 
+          className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
+          onClick={() => setShowSuccess(false)}
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+  );
+}
